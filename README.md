@@ -1,8 +1,8 @@
 # Photo Organizer
 
 
-A Ruby script to organize your pictures by date based on their EXIF metadata
-It uses the [exifr gem (https://github.com/remvee/exifr)]
+A Ruby script to organize your pictures by date based on their EXIF metadata.
+It uses the exifr gem: https://github.com/remvee/exifr
 
 ## How to use it
 
