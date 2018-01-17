@@ -3,6 +3,9 @@ require 'fileutils'
 require 'date'
 require 'time'
 
+# TODO
+# extract duplicated code and refactor
+
 def organize_pics(st)
   path = st
   no_exif_data = []
