@@ -12,35 +12,19 @@ def organize_pics(st)
 
   Dir.glob(path+'/*.*').each do |f|
     begin 
-      if EXIFR::JPEG.new(f).date_time != nil
-        t = EXIFR::JPEG.new(f).date_time
-        year = t.strftime('%Y')
-        month = t.strftime('%B')
-        if Dir.exist?(path+'/'+year)
-          if Dir.exist?(path+'/'+year+'/'+month)
-            FileUtils.mv(f, path+'/'+year+'/'+month+'/')
-          else
-            FileUtils.mkdir(path+'/'+year+'/'+month)
-            FileUtils.mv(f, path+'/'+year+'/'+month+'/')
-          end
-        else
-          FileUtils.mkdir(path+'/'+year)
-          if Dir.exist?(path+'/'+year+'/'+month)
-            FileUtils.mv(f, path+'/'+year+'/'+month+'/')
-          else          
-            FileUtils.mkdir(path+'/'+year+'/'+month)
-            FileUtils.mv(f, path+'/'+year+'/'+month+'/')
-          end
-        end
-      else
-        no_exif_date << f   
+      if EXIFR::JPEG.new(f).exif?
+        p f
+        date = EXIFR::JPEG.new(f).date_time
+        year = date.strftime('%Y')
+        month = date.strftime('%B')
+        x = FileUtils.mkdir_p(path+'/'+year+'/'+month)
+        FileUtils.mv(f, x[0])     
       end
     rescue => e
-      puts "errs for #{f}"
-      p e.message
+      no_exif_data << f
+      puts "errs for #{f}: #{e.message}"
     end
   end
-
   get_user_answers(no_exif_data)
 end
 
@@ -50,13 +34,13 @@ def get_user_answers(arr)
   answer = STDIN.gets.chomp
   
   if answer == "Yes" 
-    puts "Would you add the remaining pics to a different folder named [YEAR]_FileCreation?(Yes/No)"
+    puts "Would you add the remaining pics to a different folder named [YEAR]*?(Yes/No)"
     answer2 = STDIN.gets.chomp
     if answer2 == "Yes"
-      puts "We are adding the remaining pics to a separate folder"
+      puts "We are adding the remaining pics to a separate folder... Done!"
       organize_with_note(arr)
     else
-      puts "We are adding the remaining pics to the same folder as the others"
+      puts "We are adding the remaining pics to the same folder as the others... Done!"
       organize_by_file_data(arr)
     end
   else
@@ -69,24 +53,10 @@ def organize_by_file_data(arr)
     date = File.birthtime(file)
     year = date.strftime('%Y')
     month = date.strftime('%B')
-    path = File.dirname(file)
- 
-    if Dir.exist?(path+'/'+year)
-      if Dir.exist?(path+'/'+year+'/'+month)
-        FileUtils.mv(file, path+'/'+year+'/'+month+'/')
-      else
-        FileUtils.mkdir(path+'/'+year+'/'+month)
-        FileUtils.mv(file, path+'/'+year+'/'+month+'/')
-      end
-    else
-      FileUtils.mkdir(path+'/'+year)
-      if Dir.exist?(path+'/'+year+'/'+month)
-        FileUtils.mv(file, path+'/'+year+'/'+month+'/')
-      else          
-        FileUtils.mkdir(path+'/'+year+'/'+month)
-        FileUtils.mv(file, path+'/'+year+'/'+month+'/')
-      end
-    end
+    path = File.dirname(file)  
+
+    f = FileUtils.mkdir_p(path+'/'+year+'/'+month)
+    FileUtils.mv(file, f[0])
   end
 end
 
@@ -97,22 +67,8 @@ def organize_with_note(arr)
     month = date.strftime('%B')
     path = File.dirname(file)
    
-    if Dir.exist?(path+'/'+year+'_FileCreation')
-      if Dir.exist?(path+'/'+year+'_FileCreation/'+month)
-        FileUtils.mv(file, path+'/'+year+'_FileCreation/'+month+'/')
-      else
-        FileUtils.mkdir(path+'/'+year+'_FileCreation/'+month)
-        FileUtils.mv(file, path+'/'+year+'_FileCreation/'+month+'/')
-      end
-    else
-      FileUtils.mkdir(path+'/'+year+'_FileCreation')
-      if Dir.exist?(path+'/'+year+'_FileCreation/'+month)
-        FileUtils.mv(file, path+'/'+year+'_FileCreation/'+month+'/')
-      else          
-        FileUtils.mkdir(path+'/'+year+'_FileCreation/'+month)
-        FileUtils.mv(file, path+'/'+year+'_FileCreation/'+month+'/')
-      end
-    end
+    f = FileUtils.mkdir_p(path+'/'+year+'*/'+month)
+    FileUtils.mv(file, f[0])
   end
 end
 
